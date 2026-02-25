@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💬 PizzaMaster Pro — Central WhatsApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#FF4500; --accent:#FFD700;
+  --bg:#0F0F0F; --bg2:#1A1A1A; --bg3:#242424;
+  --card:#1E1E1E; --border:#2D2D2D;
+  --text:#F0F0F0; --muted:#888;
+  --wa:#25D366; --wa-dark:#128C7E; --wa-bg:#0D1117;
+  --radius:12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); }
+
+/* TOP BAR */
+.topbar {
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:16px 28px; display:flex; align-items:center; justify-content:space-between;
+}
+.topbar-brand { display:flex; align-items:center; gap:12px; }
+.topbar-brand h1 { font-family:'Abril Fatface',serif; color:var(--wa); font-size:1.3rem; }
+.topbar-brand small { color:var(--muted); display:block; font-size:0.75rem; }
+.wa-status { display:flex; align-items:center; gap:8px; }
+.wa-dot { width:10px; height:10px; background:var(--wa); border-radius:50%; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.wa-status-text { font-size:0.82rem; font-weight:700; color:var(--wa); }
+
+/* LAYOUT */
+.layout { display:grid; grid-template-columns:320px 1fr 340px; gap:0; height:calc(100vh - 65px); }
+
+/* ── CONTACTS PANEL ── */
+.contacts-panel {
+  background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.cp-header { padding:16px; border-bottom:1px solid var(--border); }
+.cp-header h3 { font-weight:800; font-size:0.95rem; margin-bottom:10px; }
+.cp-search {
+  background:var(--bg3); border:1px solid var(--border); border-radius:8px;
+  padding:8px 12px; color:var(--text); font-family:'Nunito',sans-serif;
+  font-size:0.85rem; outline:none; width:100%; transition:border 0.2s;
+}
+.cp-search:focus { border-color:var(--wa); }
+.cp-tabs { display:flex; border-bottom:1px solid var(--border); }
+.cp-tab {
+  flex:1; padding:10px; text-align:center;
+  font-weight:700; font-size:0.78rem; cursor:pointer;
+  border-bottom:2px solid transparent; transition:all 0.2s; color:var(--muted);
+}
+.cp-tab.active { color:var(--wa); border-bottom-color:var(--wa); }
+.contacts-list { flex:1; overflow-y:auto; }
+
+.contact-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.04);
+  cursor:pointer; transition:background 0.2s;
+}
+.contact-item:hover { background:var(--bg3); }
+.contact-item.active { background:rgba(37,211,102,0.08); border-left:3px solid var(--wa); }
+
+.ca-avatar {
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:0.9rem; flex-shrink:0;
+}
+.ca-info { flex:1; min-width:0; }
+.ca-name { font-weight:800; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ca-last { font-size:0.75rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ca-meta { text-align:right; flex-shrink:0; }
+.ca-time { font-size:0.68rem; color:var(--muted); display:block; margin-bottom:4px; }
+.ca-badge {
+  background:var(--wa); color:white;
+  font-size:0.65rem; font-weight:800;
+  padding:2px 7px; border-radius:20px;
+  display:inline-block;
+}
+.ca-status { font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:20px; }
+.status-enviado { background:rgba(33,150,243,0.2); color:#42A5F5; }
+.status-entregue { background:rgba(37,211,102,0.2); color:var(--wa); }
+.status-aberto { background:rgba(255,109,0,0.2); color:#FFA040; }
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+  background:var(--wa-bg);
+  display:flex; flex-direction:column;
+  position:relative;
+}
+.chat-panel::before {
+  content:'';
+  position:absolute; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+
+.chat-header {
+  background:rgba(37,211,102,0.1); border-bottom:1px solid rgba(37,211,102,0.2);
+  padding:14px 20px; display:flex; align-items:center; gap:14px; position:relative; z-index:1;
+}
+.ch-avatar {
+  width:42px; height:42px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:0.9rem;
+}
+.ch-info h4 { font-weight:800; font-size:0.95rem; }
+.ch-info small { color:var(--wa); font-size:0.75rem; font-weight:600; }
+.ch-actions { margin-left:auto; display:flex; gap:8px; }
+
+.chat-messages {
+  flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:8px;
+  position:relative; z-index:1;
+}
+.chat-messages::-webkit-scrollbar { width:4px; }
+.chat-messages::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+
+/* Message bubbles */
+.msg { display:flex; max-width:75%; }
+.msg.in { align-self:flex-start; }
+.msg.out { align-self:flex-end; flex-direction:row-reverse; }
+
+.msg-bubble {
+  padding:8px 12px; border-radius:10px;
+  font-size:0.85rem; line-height:1.45; position:relative;
+  max-width:100%;
+}
+.msg.in .msg-bubble {
+  background:#202C33; border-top-left-radius:2px; color:var(--text);
+}
+.msg.out .msg-bubble {
+  background:#005C4B; border-top-right-radius:2px; color:var(--text);
+}
+.msg-time {
+  font-size:0.65rem; color:rgba(255,255,255,0.45);
+  display:block; text-align:right; margin-top:3px;
+}
+.msg-status { color:var(--wa); font-size:0.75rem; }
+.msg-order-card {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px; padding:10px; margin-top:6px;
+  font-size:0.8rem;
+}
+.msg-order-card strong { color:var(--accent); display:block; margin-bottom:4px; }
+
+.date-separator {
+  text-align:center; font-size:0.72rem; color:var(--muted);
+  background:rgba(255,255,255,0.06); padding:4px 14px;
+  border-radius:20px; align-self:center; margin:8px 0;
+}
+
+/* Input area */
+.chat-input-area {
+  background:rgba(37,211,102,0.05); border-top:1px solid rgba(37,211,102,0.15);
+  padding:14px 20px; display:flex; align-items:center; gap:10px; position:relative; z-index:1;
+}
+.chat-inp {
+  flex:1; background:#202C33;
+  border:none; border-radius:24px;
+  padding:10px 18px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.88rem; outline:none;
+}
+.chat-inp::placeholder { color:var(--muted); }
+.send-btn {
+  background:var(--wa); border:none;
+  width:44px; height:44px; border-radius:50%;
+  color:white; font-size:1.2rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.send-btn:hover { background:var(--wa-dark); transform:scale(1.05); }
+.template-btn {
+  background:var(--bg3); border:1px solid var(--border);
+  width:36px; height:36px; border-radius:50%; cursor:pointer;
+  color:var(--text-muted); font-size:1rem;
+  display:flex; align-items:center; justify-content:center; transition:all 0.2s;
+}
+.template-btn:hover { border-color:var(--wa); color:var(--wa); }
+
+/* ── TEMPLATES / RIGHT PANEL ── */
+.right-panel {
+  background:var(--bg2); border-left:1px solid var(--border);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.rp-header { padding:16px; border-bottom:1px solid var(--border); }
+.rp-header h3 { font-weight:800; font-size:0.95rem; }
+.rp-tabs { display:flex; border-bottom:1px solid var(--border); }
+.rp-tab {
+  flex:1; padding:10px; text-align:center;
+  font-weight:700; font-size:0.75rem; cursor:pointer;
+  border-bottom:2px solid transparent; transition:all 0.2s; color:var(--muted);
+}
+.rp-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+.rp-content { flex:1; overflow-y:auto; padding:14px; }
+
+/* Template cards */
+.template-card {
+  background:var(--bg3); border:1px solid var(--border); border-radius:10px;
+  padding:14px; margin-bottom:10px; cursor:pointer; transition:all 0.2s;
+}
+.template-card:hover { border-color:var(--wa); }
+.tc-label { font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:6px; }
+.tc-title { font-weight:800; font-size:0.9rem; margin-bottom:6px; color:var(--accent); }
+.tc-preview { font-size:0.78rem; color:var(--muted); line-height:1.4; }
+.tc-use {
+  margin-top:10px; width:100%;
+  background:rgba(37,211,102,0.15); border:1px solid var(--wa);
+  color:var(--wa); border-radius:6px; padding:6px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:0.78rem; cursor:pointer;
+  transition:all 0.2s;
+}
+.tc-use:hover { background:var(--wa); color:white; }
+
+/* Stats */
+.stat-card {
+  background:var(--bg3); border:1px solid var(--border); border-radius:10px;
+  padding:14px; margin-bottom:10px;
+}
+.stat-card .sc-val { font-size:1.8rem; font-weight:900; color:var(--wa); }
+.stat-card .sc-label { font-size:0.78rem; color:var(--muted); font-weight:700; }
+
+/* Quick actions */
+.quick-actions { display:flex; flex-direction:column; gap:8px; }
+.qa-btn {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); border-radius:8px; padding:10px 14px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:0.82rem;
+  cursor:pointer; text-align:left; transition:all 0.2s;
+  display:flex; align-items:center; gap:10px;
+}
+.qa-btn:hover { border-color:var(--wa); color:var(--wa); }
+
+/* Modal de template */
+.template-modal {
+  display:none; position:fixed; inset:0; z-index:300;
+  align-items:center; justify-content:center;
+}
+.template-modal.open { display:flex; }
+.tm-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); }
+.tm-box {
+  background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:28px; max-width:520px; width:90%; position:relative; z-index:1;
+  animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+.tm-box h3 { font-family:'Abril Fatface',serif; color:var(--wa); margin-bottom:16px; font-size:1.2rem; }
+.tm-textarea {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:12px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.88rem; outline:none;
+  resize:none; min-height:200px; line-height:1.5; margin-bottom:14px;
+}
+.tm-textarea:focus { border-color:var(--wa); }
+.tm-actions { display:flex; gap:10px; justify-content:flex-end; }
+.btn { padding:9px 20px; border-radius:8px; border:none; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.85rem; cursor:pointer; transition:all 0.2s; }
+.btn-wa { background:linear-gradient(135deg,var(--wa),var(--wa-dark)); color:white; }
+.btn-wa:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,211,102,0.4); }
+.btn-sec { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
+
+/* Toast */
+.toast { position:fixed; bottom:20px; right:20px; background:var(--wa); color:white; padding:12px 20px; border-radius:10px; font-weight:700; font-size:0.88rem; transform:translateY(80px); opacity:0; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1); z-index:500; }
+.toast.show { transform:translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <span style="font-size:1.8rem">💬</span>
+    <div>
+      <h1>Central WhatsApp</h1>
+      <small>PizzaMaster Pro — Comunicação com Clientes</small>
+    </div>
+  </div>
+  <div class="wa-status">
+    <div class="wa-dot"></div>
+    <span class="wa-status-text">API Conectada</span>
+    <span style="font-size:0.75rem;color:var(--muted);margin-left:16px">12 mensagens hoje</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- CONTACTS PANEL -->
+  <div class="contacts-panel">
+    <div class="cp-header">
+      <h3>💬 Conversas</h3>
+      <input class="cp-search" type="text" placeholder="Buscar contato..." oninput="filterContacts(this.value)">
+    </div>
+    <div class="cp-tabs">
+      <div class="cp-tab active" onclick="filterTab('all',this)">Todas</div>
+      <div class="cp-tab" onclick="filterTab('nao_lido',this)">Não lidas</div>
+      <div class="cp-tab" onclick="filterTab('pedido',this)">Pedidos</div>
+    </div>
+    <div class="contacts-list" id="contactsList"></div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="chat-panel">
+    <div class="chat-header" id="chatHeader">
+      <span style="font-size:2rem">💬</span>
+      <div>
+        <h4>Selecione uma conversa</h4>
+        <small>Clique em um contato à esquerda</small>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div style="text-align:center;margin:auto;color:var(--muted);padding:40px">
+        <div style="font-size:3rem;margin-bottom:12px">💬</div>
+        <p>Selecione uma conversa para começar</p>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <button class="template-btn" onclick="openTemplateModal()" title="Templates">📋</button>
+      <input class="chat-inp" type="text" placeholder="Digite uma mensagem..." id="chatInput" onkeypress="handleKey(event)">
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rp-header"><h3>🚀 Ferramentas</h3></div>
+    <div class="rp-tabs">
+      <div class="rp-tab active" onclick="setRpTab('templates',this)">Templates</div>
+      <div class="rp-tab" onclick="setRpTab('stats',this)">Estatísticas</div>
+      <div class="rp-tab" onclick="setRpTab('acoes',this)">Ações</div>
+    </div>
+    <div class="rp-content" id="rpContent"></div>
+  </div>
+
+</div>
+
+<!-- TEMPLATE MODAL -->
+<div class="template-modal" id="templateModal">
+  <div class="tm-overlay" onclick="closeTemplateModal()"></div>
+  <div class="tm-box">
+    <h3>📋 Editar Mensagem</h3>
+    <textarea class="tm-textarea" id="tmTextarea"></textarea>
+    <div class="tm-actions">
+      <button class="btn btn-sec" onclick="closeTemplateModal()">Cancelar</button>
+      <button class="btn btn-wa" onclick="usarTemplate()">💬 Enviar pelo WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────
+const NUMERO_LOJA = '5511999999999';
+
+const contacts = [
+  { id:1, nome:'Carlos Silva', tel:'(11) 98765-4321', telRaw:'5511987654321', avatar:'CS', color:'#FF4500', unread:2,
+    pedido:'#0021', status:'aberto', lastMsg:'Meu pedido já saiu?', lastTime:'18:58',
+    msgs:[
+      { dir:'in', text:'Oi! Fiz um pedido há 30 min, está tudo ok?', time:'18:30' },
+      { dir:'out', text:'Olá Carlos! Tudo certo, seu pedido #0021 está sendo preparado com carinho! 🍕', time:'18:31', status:'✓✓' },
+      { dir:'in', text:'Que bom! Que pizzas estão no pedido mesmo?', time:'18:45' },
+      { dir:'out', text:'Seu pedido contém:\n🍕 Margherita G\n🫒 Portuguesa M\n🥤 2x Coca-Cola\n\nTotal: R$ 123,60 💰', time:'18:46', status:'✓✓' },
+      { dir:'in', text:'Meu pedido já saiu?', time:'18:58' },
+    ]},
+  { id:2, nome:'Ana Costa', tel:'(11) 97654-3210', telRaw:'5511976543210', avatar:'AC', color:'#9C27B0', unread:0,
+    pedido:'#0022', status:'enviado', lastMsg:'Obrigada! Chegou certinho 😍', lastTime:'18:20',
+    msgs:[
+      { dir:'out', text:'Olá Ana! Seu pedido #0022 foi confirmado! 🍕\n2x Pepperoni M\nTotal: R$ 89,80\n\nRetirada no local, já pode vir!', time:'17:55', status:'✓✓' },
+      { dir:'in', text:'Obrigada! Estou chegando em 10 min', time:'18:10' },
+      { dir:'out', text:'Perfeito! Estaremos te esperando 😊', time:'18:11', status:'✓✓' },
+      { dir:'in', text:'Obrigada! Chegou certinho 😍', time:'18:20' },
+    ]},
+  { id:3, nome:'João Ferreira', tel:'(11) 96543-2109', telRaw:'5511965432109', avatar:'JF', color:'#2196F3', unread:1,
+    pedido:'#0023', status:'entregue', lastMsg:'Qual o tempo de entrega?', lastTime:'19:05',
+    msgs:[
+      { dir:'in', text:'Boa noite! Quero fazer um pedido', time:'18:10' },
+      { dir:'out', text:'Boa noite João! Seja bem-vindo à PizzaMaster Pro! 🍕\n\nNosso cardápio completo está disponível em:\ncardapio.pizzamaster.com\n\nOu me diga o que deseja e eu anoto!', time:'18:11', status:'✓✓' },
+      { dir:'in', text:'Quero Quatro Queijos G e Frango M, entrega', time:'18:20' },
+      { dir:'out', text:'Pedido anotado! ✅\n🧀 Quatro Queijos G — R$ 62,90\n🐔 Frango c/ Catupiry M — R$ 44,90\n🛵 Taxa entrega — R$ 5,00\n💰 Total: R$ 112,80\n\nPagamento: Dinheiro (troco para R$200)\n\nEstimativa: 40-50 min 🕐', time:'18:21', status:'✓✓' },
+      { dir:'in', text:'Qual o tempo de entrega?', time:'19:05' },
+    ]},
+  { id:4, nome:'Maria Oliveira', tel:'(11) 95432-1098', telRaw:'5511954321098', avatar:'MO', color:'#E91E63', unread:0,
+    pedido:'#0024', status:'entregue', lastMsg:'Perfeito, obrigada!', lastTime:'17:50',
+    msgs:[
+      { dir:'out', text:'🎂 FELIZ ANIVERSÁRIO, MARIA! 🎉\n\nA PizzaMaster Pro tem um presente especial para você:\n\n🍕 10% de desconto no seu próximo pedido!\n\nCódigo: ANIVERSARIO10\n\nAproveite! 😍', time:'17:30', status:'✓✓' },
+      { dir:'in', text:'Ai que fofo!! Obrigada demais!', time:'17:45' },
+      { dir:'in', text:'Perfeito, obrigada!', time:'17:50' },
+    ]},
+  { id:5, nome:'Pedro Santos', tel:'(11) 94321-0987', telRaw:'5511943210987', avatar:'PS', color:'#00BCD4', unread:3,
+    pedido:'#0025', status:'aberto', lastMsg:'A pizza tá demorando muito', lastTime:'19:15',
+    msgs:[
+      { dir:'in', text:'Oi, fiz um pedido na mesa 4', time:'19:02' },
+      { dir:'out', text:'Olá Pedro! Pedido recebido ✅\nSua Mexicana G + Frango M + 3 Sucos estão sendo preparados!\nEstimativa: 20 min 🍕', time:'19:03', status:'✓' },
+      { dir:'in', text:'Tá bom', time:'19:05' },
+      { dir:'in', text:'A pizza tá demorando muito', time:'19:15' },
+    ]},
+];
+
+const TEMPLATES = [
+  { cat:'Pedido', titulo:'✅ Confirmação de Pedido', preview:'Seu pedido foi confirmado e está sendo preparado...', texto:`✅ *Pedido Confirmado!*\n\nOlá, {nome}! 🍕\n\nSeu pedido *{pedido}* foi confirmado:\n{itens}\n\n💰 *Total: {total}*\n⏱️ Tempo estimado: 40–50 min\n\nAcompanhe pelo WhatsApp!\n\n_PizzaMaster Pro_ 🍕` },
+  { cat:'Pedido', titulo:'🔥 Pedido em Preparo', preview:'Sua pizza está sendo preparada com muito carinho!', texto:`🔥 *Notícia quente!* (literalmente)\n\nOlá, {nome}! 👋\n\nSeu pedido *{pedido}* está no forno agora! 🍕\n\nEstamos preparando tudo com muito carinho para você.\n\n*Previsão de saída: 15 minutos* ⏱️\n\n_PizzaMaster Pro_ 🍕` },
+  { cat:'Pedido', titulo:'🛵 Saiu para Entrega', preview:'Seu pedido está a caminho!', texto:`🛵 *Seu pedido está a caminho!*\n\nOlá, {nome}! 😊\n\nSeu pedido *{pedido}* acabou de sair para entrega!\n\n📍 Endereço: {endereco}\n⏱️ Previsão de chegada: 20–30 min\n\nFique de olho, estamos chegando! 🍕\n\n_PizzaMaster Pro_ 🍕` },
+  { cat:'Pedido', titulo:'✅ Pedido Entregue', preview:'Sua pizza foi entregue! Avalie nosso atendimento.', texto:`✅ *Pedido Entregue com Sucesso!*\n\nOlá, {nome}! 🎉\n\nEsperamos que esteja delicioso! 😋\n\n⭐ *Deixe sua avaliação:*\nhttps://g.page/pizzamaster\n\nAté o próximo pedido! 🍕\n\n_Obrigado pela preferência!_\n_PizzaMaster Pro_ 🍕` },
+  { cat:'Marketing', titulo:'🎁 Oferta Especial', preview:'Promoção exclusiva para clientes especiais!', texto:`🎁 *OFERTA ESPECIAL PARA VOCÊ!*\n\nOlá, {nome}! 👋\n\n🍕 *PIZZAS A PARTIR DE R$ 29,90!*\n\n✅ Válido somente hoje!\n✅ Entrega grátis acima de R$ 80\n✅ Use o código: *PROMO10*\n\nFaça seu pedido agora:\n📱 (11) 9999-9999\n\n_PizzaMaster Pro — A melhor pizza da cidade!_ 🍕` },
+  { cat:'Marketing', titulo:'🎂 Aniversário', preview:'Mensagem especial de aniversário com desconto!', texto:`🎂 *FELIZ ANIVERSÁRIO, {nome}!* 🎉\n\nToda a equipe da PizzaMaster Pro deseja um dia incrível!\n\n🎁 *Presente especial:*\n10% de desconto no seu próximo pedido!\n\n*Código: ANIVERSARIO10*\n\nVálido por 7 dias. Aproveite! 🍕\n\n_Com carinho, PizzaMaster Pro_ 🍕` },
+  { cat:'Marketing', titulo:'📣 Cardápio Novo', preview:'Novidades no cardápio! Confira as novidades.', texto:`📣 *NOVIDADES NO CARDÁPIO!* 🍕\n\nOlá, {nome}! 🎉\n\nTemos novidades incríveis esperando por você:\n\n⭐ *Pizza Mexicana Premium* — R$ 66,90\n⭐ *Trufa c/ Nozes* — R$ 78,90\n⭐ *Nutella c/ Morango* — R$ 59,90\n\n🛵 Entrega: R$ 5,00\n⏱️ 40–50 min\n\nPeça agora! 📱 (11) 9999-9999\n\n_PizzaMaster Pro_ 🍕` },
+  { cat:'Atendimento', titulo:'⏰ Aviso de Demora', preview:'Pedido com pequeno atraso, pedimos desculpas.', texto:`⏰ *Aviso Importante*\n\nOlá, {nome}!\n\nEstamos com alto volume de pedidos agora e seu pedido *{pedido}* pode ter um pequeno atraso de aproximadamente *15 minutos.*\n\nPedimos sinceras desculpas! 🙏\n\nComo compensação, na sua *próxima compra* você terá *desconto de 10%.*\n\nObrigado pela compreensão! 😊\n\n_PizzaMaster Pro_ 🍕` },
+  { cat:'Atendimento', titulo:'❌ Cancelamento', preview:'Infelizmente precisamos cancelar o pedido.', texto:`❌ *Sobre seu Pedido {pedido}*\n\nOlá, {nome}!\n\nInfelizmente precisamos cancelar seu pedido por: *{motivo}.*\n\nO estorno será processado em até 5 dias úteis.\n\nMuito obrigado pela compreensão e esperamos te atender em breve! 🙏\n\n_PizzaMaster Pro_ 🍕` },
+];
+
+// ── STATE ─────────────────────────────────────────────
+let currentContact = null;
+let currentRpTab = 'templates';
+let currentTemplate = '';
+
+// ── INIT ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderContacts(contacts);
+  setRpTab('templates', document.querySelector('.rp-tab.active'));
+});
+
+// ── CONTACTS ──────────────────────────────────────────
+function renderContacts(list) {
+  document.getElementById('contactsList').innerHTML = list.map(c => `
+    <div class="contact-item ${currentContact?.id===c.id?'active':''}" onclick="selectContact(${c.id})">
+      <div class="ca-avatar" style="background:${c.color}20;color:${c.color}">${c.avatar}</div>
+      <div class="ca-info">
+        <div class="ca-name">${c.nome}</div>
+        <div class="ca-last">${c.lastMsg}</div>
+      </div>
+      <div class="ca-meta">
+        <span class="ca-time">${c.lastTime}</span>
+        ${c.unread>0?`<span class="ca-badge">${c.unread}</span>`:`<span class="ca-status status-${c.status}">${{enviado:'Enviado',entregue:'Entregue',aberto:'Aberto'}[c.status]||c.status}</span>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterContacts(q) {
+  renderContacts(contacts.filter(c => c.nome.toLowerCase().includes(q.toLowerCase()) || c.tel.includes(q)));
+}
+
+function filterTab(tab, el) {
+  document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (tab === 'all') renderContacts(contacts);
+  else if (tab === 'nao_lido') renderContacts(contacts.filter(c => c.unread > 0));
+  else renderContacts(contacts.filter(c => c.pedido));
+}
+
+function selectContact(id) {
+  currentContact = contacts.find(c => c.id === id);
+  currentContact.unread = 0;
+  renderContacts(contacts);
+  renderChat();
+}
+
+// ── CHAT ──────────────────────────────────────────────
+function renderChat() {
+  if (!currentContact) return;
+  const c = currentContact;
+
+  document.getElementById('chatHeader').innerHTML = `
+    <div class="ch-avatar" style="background:${c.color}25;color:${c.color}">${c.avatar}</div>
+    <div class="ch-info">
+      <h4>${c.nome}</h4>
+      <small>🟢 Online • ${c.tel} • Pedido: ${c.pedido}</small>
+    </div>
+    <div class="ch-actions">
+      <button class="btn" style="background:rgba(37,211,102,0.15);color:var(--wa);border:1px solid var(--wa);padding:7px 14px;font-size:0.8rem" onclick="openWa('${c.telRaw}')">📲 Abrir WhatsApp</button>
+      <button class="btn" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:7px 14px;font-size:0.8rem" onclick="openTemplateModal()">📋 Templates</button>
+    </div>
+  `;
+
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = `<div class="date-separator">📅 Hoje</div>` +
+    c.msgs.map(m => `
+    <div class="msg ${m.dir}">
+      <div class="msg-bubble">
+        ${m.text.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}
+        <span class="msg-time">${m.time} ${m.dir==='out'?`<span class="msg-status">${m.status||'✓'}</span>`:''}</span>
+      </div>
+    </div>
+  `).join('');
+
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
+
+function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text || !currentContact) return;
+
+  const msg = { dir:'out', text, time: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), status:'✓' };
+  currentContact.msgs.push(msg);
+  currentContact.lastMsg = text;
+  currentContact.lastTime = msg.time;
+  inp.value = '';
+  renderChat();
+  renderContacts(contacts);
+  showToast('✅ Mensagem enviada!');
+}
+
+// ── TEMPLATES ─────────────────────────────────────────
+function openTemplateModal(texto = '') {
+  currentTemplate = texto || (currentContact ? `Olá, ${currentContact.nome}! 😊\n\n` : '');
+  document.getElementById('tmTextarea').value = currentTemplate;
+  document.getElementById('templateModal').classList.add('open');
+}
+function closeTemplateModal() { document.getElementById('templateModal').classList.remove('open'); }
+
+function useTemplate(index) {
+  const t = TEMPLATES[index];
+  let msg = t.texto;
+  if (currentContact) {
+    msg = msg.replace(/{nome}/g, currentContact.nome.split(' ')[0]);
+    msg = msg.replace(/{pedido}/g, currentContact.pedido || '#0000');
+    msg = msg.replace(/{endereco}/g, 'endereço do cliente');
+    msg = msg.replace(/{itens}/g, '• Itens do pedido');
+    msg = msg.replace(/{total}/g, 'R$ 0,00');
+    msg = msg.replace(/{motivo}/g, 'indisponibilidade do produto');
+  }
+  openTemplateModal(msg);
+}
+
+function usarTemplate() {
+  const text = document.getElementById('tmTextarea').value.trim();
+  if (!text) return;
+  if (currentContact) {
+    const url = `https://wa.me/${currentContact.telRaw}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    closeTemplateModal();
+    showToast('💬 Abrindo WhatsApp...');
+  } else {
+    closeTemplateModal();
+    showToast('Selecione um contato primeiro!', true);
+  }
+}
+
+function openWa(tel) {
+  window.open(`https://wa.me/${tel}`, '_blank');
+}
+
+// ── AÇÕES RÁPIDAS ─────────────────────────────────────
+function sendStatusUpdate(status) {
+  if (!currentContact) { showToast('Selecione um contato primeiro!', true); return; }
+  const tmplMap = { confirmado:0, preparo:1, entrega:2, entregue:3 };
+  useTemplate(tmplMap[status]);
+}
+
+function sendBulkMsg() {
+  const msg = encodeURIComponent(`🍕 *PizzaMaster Pro — Novidade!*\n\nConfira nossas ofertas especiais de hoje!\n\n🛵 Entrega grátis acima de R$ 80\n⏱️ 40-50 min\n\nPeça agora: (11) 9999-9999`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+}
+
+// ── RIGHT PANEL ───────────────────────────────────────
+function setRpTab(tab, el) {
+  currentRpTab = tab;
+  document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+  el?.classList.add('active');
+
+  const content = document.getElementById('rpContent');
+
+  if (tab === 'templates') {
+    const cats = [...new Set(TEMPLATES.map(t => t.cat))];
+    content.innerHTML = cats.map(cat => `
+      <div style="font-size:0.7rem;font-weight:800;text-transform:uppercase;color:var(--muted);margin:12px 0 6px;letter-spacing:0.5px">${cat}</div>
+      ${TEMPLATES.filter(t=>t.cat===cat).map((t,i) => {
+        const idx = TEMPLATES.indexOf(t);
+        return `<div class="template-card">
+          <div class="tc-label">${t.cat}</div>
+          <div class="tc-title">${t.titulo}</div>
+          <div class="tc-preview">${t.preview}</div>
+          <button class="tc-use" onclick="useTemplate(${idx})">📋 Usar Template</button>
+        </div>`;
+      }).join('')}
+    `).join('');
+  }
+
+  else if (tab === 'stats') {
+    content.innerHTML = `
+      <div class="stat-card"><div class="sc-val">47</div><div class="sc-label">Mensagens Enviadas Hoje</div></div>
+      <div class="stat-card"><div class="sc-val">5</div><div class="sc-label">Pedidos via WhatsApp</div></div>
+      <div class="stat-card"><div class="sc-val">98%</div><div class="sc-label">Taxa de Entrega (msg)</div></div>
+      <div class="stat-card"><div class="sc-val">4min</div><div class="sc-label">Tempo Médio de Resposta</div></div>
+      <div class="stat-card"><div class="sc-val">R$ 1.240</div><div class="sc-label">Vendas via WhatsApp Hoje</div></div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:12px;text-align:center">
+        💡 Para automação avançada, integre com a<br><strong style="color:var(--wa)">WhatsApp Business API</strong> oficial.
+      </div>
+    `;
+  }
+
+  else if (tab === 'acoes') {
+    content.innerHTML = `
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">Ações rápidas para o pedido selecionado</div>
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="sendStatusUpdate('confirmado')">✅ Enviar Confirmação de Pedido</button>
+        <button class="qa-btn" onclick="sendStatusUpdate('preparo')">🔥 Avisar que Está em Preparo</button>
+        <button class="qa-btn" onclick="sendStatusUpdate('entrega')">🛵 Avisar que Saiu para Entrega</button>
+        <button class="qa-btn" onclick="sendStatusUpdate('entregue')">⭐ Solicitar Avaliação</button>
+        <hr style="border-color:var(--border);margin:8px 0">
+        <button class="qa-btn" onclick="useTemplate(4)">🎁 Enviar Oferta Especial</button>
+        <button class="qa-btn" onclick="useTemplate(5)">🎂 Enviar Parabéns</button>
+        <button class="qa-btn" onclick="useTemplate(6)">📣 Divulgar Cardápio Novo</button>
+        <button class="qa-btn" onclick="useTemplate(7)">⏰ Avisar Demora</button>
+        <hr style="border-color:var(--border);margin:8px 0">
+        <button class="qa-btn" style="color:var(--wa);border-color:var(--wa)" onclick="sendBulkMsg()">📢 Enviar para Múltiplos Clientes</button>
+      </div>
+    `;
+  }
+}
+
+function showToast(msg, error=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = error ? '#FF1744' : 'var(--wa)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍕 PizzaMaster Pro — Faça seu Pedido</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #FF4500;
+  --primary-dark: #CC3700;
+  --accent: #FFD700;
+  --bg: #0F0F0F;
+  --bg2: #1A1A1A;
+  --bg3: #242424;
+  --card: #1E1E1E;
+  --border: #2D2D2D;
+  --text: #F0F0F0;
+  --muted: #888;
+  --green: #25D366;
+  --radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ── HEADER ── */
+.hero {
+  background: linear-gradient(135deg, #1A0A00 0%, #0F0F0F 50%, #1A0000 100%);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(255,69,0,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 30%, rgba(255,215,0,0.05) 0%, transparent 50%);
+}
+.hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.hero-brand { display:flex; align-items:center; gap:16px; }
+.hero-logo { font-size:3.5rem; filter:drop-shadow(0 0 20px rgba(255,69,0,0.5)); animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.hero-text h1 { font-family:'Abril Fatface',serif; font-size:2rem; color:var(--primary); line-height:1; }
+.hero-text p { color:var(--muted); font-size:0.9rem; margin-top:4px; }
+.hero-info { text-align:right; }
+.status-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(37,211,102,0.15); border:1px solid rgba(37,211,102,0.3);
+  color:var(--green); padding:6px 16px; border-radius:30px;
+  font-weight:800; font-size:0.85rem; margin-bottom:8px;
+}
+.status-dot { width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+.hero-hours { color:var(--muted); font-size:0.82rem; }
+.hero-hours strong { color:var(--accent); }
+
+/* ── DELIVERY BAR ── */
+.delivery-bar {
+  background:var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+}
+.delivery-bar-inner {
+  max-width:1200px; margin:0 auto;
+  display:flex; gap:32px; flex-wrap:wrap;
+}
+.db-item { display:flex; align-items:center; gap:8px; font-size:0.85rem; }
+.db-item span:first-child { font-size:1.2rem; }
+.db-item strong { color:var(--accent); }
+
+/* ── MAIN LAYOUT ── */
+.main-wrapper {
+  max-width:1200px;
+  margin:0 auto;
+  padding:32px 24px;
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:28px;
+  align-items:start;
+}
+
+/* ── MENU SECTION ── */
+.menu-section {}
+.section-title {
+  font-family:'Abril Fatface',serif;
+  font-size:1.6rem; color:var(--primary);
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:10px;
+}
+
+/* Category tabs */
+.cat-tabs {
+  display:flex; gap:8px; margin-bottom:28px;
+  overflow-x:auto; padding-bottom:4px;
+}
+.cat-tabs::-webkit-scrollbar { height:3px; }
+.cat-tabs::-webkit-scrollbar-thumb { background:var(--primary); border-radius:2px; }
+.cat-tab {
+  padding:8px 20px;
+  border:2px solid var(--border);
+  background:var(--card);
+  color:var(--muted);
+  border-radius:30px;
+  cursor:pointer;
+  font-family:'Nunito',sans-serif;
+  font-weight:800; font-size:0.85rem;
+  white-space:nowrap;
+  transition:all 0.2s;
+}
+.cat-tab:hover, .cat-tab.active { border-color:var(--primary); background:var(--primary); color:white; }
+
+/* Pizza cards grid */
+.menu-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:18px;
+}
+.menu-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  transition:all 0.3s;
+}
+.menu-card:hover { transform:translateY(-4px); border-color:var(--primary); box-shadow:0 12px 40px rgba(255,69,0,0.15); }
+
+.mc-visual {
+  height:140px;
+  background:linear-gradient(135deg,var(--bg3),var(--bg2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:4.5rem;
+  position:relative;
+}
+.mc-badge {
+  position:absolute; top:10px; right:10px;
+  padding:3px 10px; border-radius:20px;
+  font-size:0.65rem; font-weight:800; text-transform:uppercase;
+}
+.mc-body { padding:16px; }
+.mc-body h3 { font-weight:900; font-size:1rem; margin-bottom:4px; }
+.mc-desc { font-size:0.75rem; color:var(--muted); margin-bottom:14px; line-height:1.4; }
+
+.size-selector { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.size-btn {
+  flex:1; min-width:70px;
+  padding:8px 4px; border-radius:10px;
+  border:2px solid var(--border);
+  background:var(--bg3);
+  cursor:pointer; text-align:center;
+  transition:all 0.2s;
+}
+.size-btn:hover, .size-btn.selected { border-color:var(--primary); background:rgba(255,69,0,0.1); }
+.size-btn .sz { display:block; font-size:0.65rem; color:var(--muted); font-weight:600; }
+.size-btn .pr { display:block; font-weight:900; color:var(--accent); font-size:0.85rem; }
+
+.add-btn {
+  width:100%;
+  background:linear-gradient(135deg,var(--primary),#FF6B35);
+  color:white; border:none;
+  padding:10px; border-radius:10px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.9rem;
+  cursor:pointer; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.add-btn:hover { transform:scale(1.02); box-shadow:0 6px 20px rgba(255,69,0,0.4); }
+
+/* ── CART SIDEBAR ── */
+.cart-sidebar {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  position:sticky; top:24px;
+  overflow:hidden;
+}
+.cart-header {
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  padding:18px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.cart-header h3 { font-family:'Abril Fatface',serif; font-size:1.2rem; }
+.cart-count {
+  background:rgba(255,255,255,0.25);
+  padding:3px 12px; border-radius:20px;
+  font-weight:800; font-size:0.85rem;
+}
+
+/* Customer form */
+.customer-form { padding:18px; border-bottom:1px solid var(--border); }
+.customer-form h4 { font-size:0.8rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; }
+.cf-input {
+  width:100%; background:var(--bg3);
+  border:1px solid var(--border); border-radius:8px;
+  padding:9px 12px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.85rem;
+  margin-bottom:8px; outline:none; transition:border-color 0.2s;
+}
+.cf-input:focus { border-color:var(--primary); }
+.cf-input::placeholder { color:var(--muted); }
+.delivery-toggle { display:flex; gap:6px; margin-bottom:8px; }
+.dt-btn {
+  flex:1; padding:8px; border:2px solid var(--border);
+  background:var(--bg3); color:var(--muted);
+  border-radius:8px; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:0.78rem;
+  transition:all 0.2s;
+}
+.dt-btn.active { border-color:var(--primary); color:var(--primary); background:rgba(255,69,0,0.1); }
+
+/* Cart items */
+.cart-items { padding:14px; min-height:120px; max-height:260px; overflow-y:auto; }
+.empty-cart { text-align:center; padding:32px 16px; color:var(--muted); }
+.empty-cart .ec-icon { font-size:3rem; display:block; margin-bottom:8px; opacity:0.4; }
+
+.cart-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.cart-item:last-child { border:none; }
+.ci-emoji { font-size:1.6rem; }
+.ci-info { flex:1; }
+.ci-name { font-weight:800; font-size:0.85rem; line-height:1.2; }
+.ci-size { font-size:0.72rem; color:var(--muted); }
+.ci-qty {
+  display:flex; align-items:center; gap:6px;
+}
+.qty-btn {
+  width:24px; height:24px; border-radius:50%;
+  border:none; cursor:pointer;
+  font-weight:800; font-size:0.9rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.qty-minus { background:var(--bg3); color:var(--muted); }
+.qty-minus:hover { background:var(--primary); color:white; }
+.qty-plus { background:var(--primary); color:white; }
+.qty-plus:hover { transform:scale(1.1); }
+.ci-qty span { font-weight:800; min-width:20px; text-align:center; }
+.ci-price { font-weight:900; color:var(--accent); font-size:0.88rem; white-space:nowrap; }
+
+/* Cart summary */
+.cart-summary { padding:14px 18px; border-top:1px solid var(--border); }
+.cs-row { display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px; }
+.cs-row.total { font-size:1.1rem; font-weight:900; padding-top:8px; border-top:1px solid var(--border); margin-top:4px; }
+.cs-row.total span:last-child { color:var(--green); }
+
+/* Payment select */
+.payment-select {
+  width:100%; background:var(--bg3);
+  border:1px solid var(--border); border-radius:8px;
+  padding:9px 12px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.85rem;
+  margin-bottom:10px; outline:none;
+}
+
+.obs-input {
+  width:100%; background:var(--bg3);
+  border:1px solid var(--border); border-radius:8px;
+  padding:9px 12px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.82rem;
+  margin-bottom:14px; outline:none; resize:none;
+}
+
+/* WhatsApp button */
+.whatsapp-btn {
+  width:100%;
+  background:linear-gradient(135deg,#25D366,#128C7E);
+  color:white; border:none;
+  padding:14px; border-radius:12px;
+  font-family:'Nunito',sans-serif; font-weight:900; font-size:1rem;
+  cursor:pointer; transition:all 0.3s;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.whatsapp-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(37,211,102,0.4); }
+.whatsapp-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.whatsapp-icon { font-size:1.4rem; }
+
+/* ── FLOATING CART (mobile) ── */
+.floating-cart {
+  display:none;
+  position:fixed; bottom:20px; right:20px;
+  background:var(--primary);
+  color:white; border:none; border-radius:50px;
+  padding:14px 22px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.9rem;
+  cursor:pointer; z-index:200;
+  box-shadow:0 8px 24px rgba(255,69,0,0.5);
+  transition:all 0.3s;
+  gap:10px; align-items:center;
+}
+.floating-cart.has-items { display:flex; animation:slideUp 0.3s ease; }
+@keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* ── MOBILE CART DRAWER ── */
+.cart-drawer {
+  display:none;
+  position:fixed; inset:0; z-index:300;
+}
+.cart-drawer.open { display:block; }
+.drawer-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); }
+.drawer-panel {
+  position:absolute; right:0; top:0; bottom:0;
+  width:min(400px, 100vw);
+  background:var(--card);
+  overflow-y:auto;
+  animation:slideRight 0.3s ease;
+}
+@keyframes slideRight { from{transform:translateX(100%)} to{transform:translateX(0)} }
+.drawer-close {
+  position:absolute; top:16px; right:16px;
+  background:var(--bg3); border:none; color:var(--text);
+  width:34px; height:34px; border-radius:50%;
+  cursor:pointer; font-size:1rem; z-index:1;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ── MODAL CONFIRMAÇÃO ── */
+.confirm-modal {
+  display:none; position:fixed; inset:0; z-index:400;
+  align-items:center; justify-content:center;
+}
+.confirm-modal.open { display:flex; }
+.cm-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(6px); }
+.cm-box {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; padding:40px 36px;
+  max-width:440px; width:90%;
+  text-align:center; position:relative; z-index:1;
+  animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+.cm-icon { font-size:4rem; display:block; margin-bottom:16px; }
+.cm-box h2 { font-family:'Abril Fatface',serif; font-size:1.6rem; color:var(--green); margin-bottom:8px; }
+.cm-box p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
+.cm-number { font-size:2.5rem; font-weight:900; color:var(--accent); margin-bottom:24px; }
+.cm-track { background:var(--bg3); border-radius:12px; padding:16px; margin-bottom:24px; text-align:left; }
+.cm-track p { font-size:0.82rem; color:var(--muted); margin-bottom:6px; }
+.cm-track strong { display:block; margin-bottom:4px; }
+.btn-close-confirm {
+  background:var(--primary); color:white; border:none;
+  padding:12px 32px; border-radius:10px;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.95rem;
+  cursor:pointer;
+}
+
+/* ── BADGE COLORS ── */
+.b-tradicional { background:rgba(33,150,243,0.25); color:#42A5F5; }
+.b-especial { background:rgba(156,39,176,0.25); color:#CE93D8; }
+.b-premium { background:linear-gradient(135deg,#FFD700,#FF8C00); color:#000; }
+.b-doce { background:rgba(233,30,99,0.25); color:#F06292; }
+.b-bebida { background:rgba(0,188,212,0.25); color:#4DD0E1; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .main-wrapper { grid-template-columns:1fr; }
+  .cart-sidebar { display:none; }
+  .floating-cart.has-items { display:flex; }
+}
+@media(max-width:600px) {
+  .hero-inner { flex-direction:column; gap:16px; text-align:center; }
+  .hero-info { text-align:center; }
+  .menu-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO HEADER -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-brand">
+      <span class="hero-logo">🍕</span>
+      <div class="hero-text">
+        <h1>PizzaMaster Pro</h1>
+        <p>Delivery & Retirada • Qualidade garantida</p>
+      </div>
+    </div>
+    <div class="hero-info">
+      <div class="status-badge">
+        <span class="status-dot"></span> ABERTO AGORA
+      </div>
+      <div class="hero-hours">🕐 Horário: <strong>17:00 – 23:30</strong> | <strong>📍 São Paulo, SP</strong></div>
+    </div>
+  </div>
+</header>
+
+<!-- DELIVERY INFO BAR -->
+<div class="delivery-bar">
+  <div class="delivery-bar-inner">
+    <div class="db-item"><span>🛵</span> Entrega: <strong>R$ 5,00</strong></div>
+    <div class="db-item"><span>⏱️</span> Tempo médio: <strong>40–55 min</strong></div>
+    <div class="db-item"><span>💳</span> PIX, Cartão, Dinheiro</div>
+    <div class="db-item"><span>📦</span> Pedido mínimo: <strong>R$ 30,00</strong></div>
+    <div class="db-item"><span>⭐</span> <strong>4.9</strong> (1.240 avaliações)</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+
+  <!-- MENU LEFT -->
+  <div class="menu-section">
+    <h2 class="section-title">🍕 Escolha sua Pizza</h2>
+
+    <!-- CATEGORY TABS -->
+    <div class="cat-tabs">
+      <button class="cat-tab active" data-cat="all">🍕 Todas</button>
+      <button class="cat-tab" data-cat="tradicional">🍅 Tradicional</button>
+      <button class="cat-tab" data-cat="especial">⭐ Especial</button>
+      <button class="cat-tab" data-cat="premium">👑 Premium</button>
+      <button class="cat-tab" data-cat="doce">🍬 Doce</button>
+      <button class="cat-tab" data-cat="bebida">🥤 Bebidas</button>
+    </div>
+
+    <!-- MENU GRID -->
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+
+  <!-- CART RIGHT -->
+  <div class="cart-sidebar" id="cartSidebar">
+    <div id="cartContent"></div>
+  </div>
+
+</div>
+
+<!-- FLOATING CART BUTTON (MOBILE) -->
+<button class="floating-cart" id="floatingCart" onclick="openDrawer()">
+  🛒 Ver Carrinho • <span id="floatTotal">R$ 0,00</span>
+  <span id="floatCount" style="background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:20px;font-size:0.8rem">0</span>
+</button>
+
+<!-- MOBILE CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer-panel">
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <div id="drawerContent"></div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="cm-overlay" onclick="closeConfirm()"></div>
+  <div class="cm-box">
+    <span class="cm-icon">✅</span>
+    <h2>Pedido Enviado!</h2>
+    <p>Seu pedido foi enviado via WhatsApp para a nossa equipe.</p>
+    <div class="cm-number" id="confirmNumber">#0000</div>
+    <div class="cm-track">
+      <p>⏱️ Tempo estimado de entrega:</p>
+      <strong>40 – 55 minutos</strong>
+      <p style="margin-top:8px">📲 Acompanhe pelo WhatsApp!</p>
+    </div>
+    <button class="btn-close-confirm" onclick="closeConfirm()">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────
+const PIZZAS = [
+  { id:1, nome:'Margherita', emoji:'🍕', categoria:'tradicional', desc:'Molho de tomate, mussarela, manjericão fresco', pp:29.90, pm:39.90, pg:49.90 },
+  { id:2, nome:'Pepperoni', emoji:'🍕', categoria:'especial', desc:'Pepperoni artesanal, mussarela, molho especial', pp:34.90, pm:44.90, pg:59.90 },
+  { id:3, nome:'Quatro Queijos', emoji:'🧀', categoria:'especial', desc:'Mussarela, cheddar, parmesão, gorgonzola', pp:36.90, pm:48.90, pg:62.90 },
+  { id:4, nome:'Portuguesa', emoji:'🍳', categoria:'tradicional', desc:'Presunto, ovo, cebola, azeitona, mussarela', pp:32.90, pm:42.90, pg:55.90 },
+  { id:5, nome:'Frango c/ Catupiry', emoji:'🐔', categoria:'especial', desc:'Frango desfiado temperado, catupiry cremoso', pp:33.90, pm:44.90, pg:58.90 },
+  { id:6, nome:'Calabresa', emoji:'🌶️', categoria:'tradicional', desc:'Calabresa artesanal, cebola, azeitona', pp:30.90, pm:40.90, pg:52.90 },
+  { id:7, nome:'Napolitana', emoji:'🍅', categoria:'tradicional', desc:'Tomate fresco, mussarela, alho, manjericão', pp:31.90, pm:41.90, pg:53.90 },
+  { id:8, nome:'Strogonoff', emoji:'🥩', categoria:'premium', desc:'Strogonoff de carne, mussarela, batata palha', pp:39.90, pm:52.90, pg:68.90 },
+  { id:9, nome:'Mexicana', emoji:'🌮', categoria:'premium', desc:'Carne moída, jalapeño, queijo gouda apimentado', pp:38.90, pm:51.90, pg:66.90 },
+  { id:10, nome:'Banana Nevada', emoji:'🍌', categoria:'doce', desc:'Banana, açúcar, canela, mussarela derretida', pp:28.90, pm:38.90, pg:48.90 },
+  { id:11, nome:'Nutella c/ Morango', emoji:'🍓', categoria:'doce', desc:'Nutella generosa, morangos frescos, granulado', pp:35.90, pm:46.90, pg:59.90 },
+  { id:12, nome:'Trufa c/ Nozes', emoji:'🍄', categoria:'premium', desc:'Creme de trufa, nozes, gorgonzola, mel', pp:45.90, pm:60.90, pg:78.90 },
+  { id:13, nome:'Coca-Cola 2L', emoji:'🥤', categoria:'bebida', desc:'Refrigerante gelado', pp:12.90, pm:12.90, pg:12.90 },
+  { id:14, nome:'Suco Natural 500ml', emoji:'🍊', categoria:'bebida', desc:'Laranja, limão ou maracujá', pp:10.90, pm:10.90, pg:10.90 },
+  { id:15, nome:'Água Mineral', emoji:'💧', categoria:'bebida', desc:'Com ou sem gás 500ml', pp:5.00, pm:5.00, pg:5.00 },
+];
+
+const WHATSAPP = '5511999999999'; // ← TROCAR PELO NÚMERO REAL
+
+// ── STATE ───────────────────────────────────────────
+let cart = [];
+let selectedSizes = {};
+let deliveryType = 'entrega';
+
+// ── INIT ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  PIZZAS.forEach(p => selectedSizes[p.id] = 'M');
+  renderMenu('all');
+  renderCart();
+  initTabs();
+});
+
+function initTabs() {
+  document.querySelectorAll('.cat-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderMenu(tab.dataset.cat);
+    });
+  });
+}
+
+// ── RENDER MENU ──────────────────────────────────────
+function renderMenu(filter) {
+  const pizzas = filter === 'all' ? PIZZAS : PIZZAS.filter(p => p.categoria === filter);
+  const bClass = { tradicional:'b-tradicional', especial:'b-especial', premium:'b-premium', doce:'b-doce', bebida:'b-bebida' };
+  const bLabel = { tradicional:'Tradicional', especial:'Especial', premium:'👑 Premium', doce:'Doce', bebida:'Bebida' };
+  const isBeverage = p => p.categoria === 'bebida';
+
+  document.getElementById('menuGrid').innerHTML = pizzas.map(p => `
+    <div class="menu-card" id="card-${p.id}">
+      <div class="mc-visual">
+        <span style="font-size:4.5rem">${p.emoji}</span>
+        <span class="mc-badge ${bClass[p.categoria]}">${bLabel[p.categoria]}</span>
+      </div>
+      <div class="mc-body">
+        <h3>${p.nome}</h3>
+        <p class="mc-desc">${p.desc}</p>
+        ${isBeverage(p) ? `
+          <div class="size-selector">
+            <div class="size-btn selected">
+              <span class="sz">Unidade</span>
+              <span class="pr">R$ ${p.pp.toFixed(2).replace('.',',')}</span>
+            </div>
+          </div>
+        ` : `
+          <div class="size-selector" id="sizes-${p.id}">
+            ${['P','M','G'].map((s,i) => {
+              const prices = [p.pp, p.pm, p.pg];
+              const labels = ['Pequena 25cm', 'Média 30cm', 'Grande 35cm'];
+              return `<div class="size-btn${s==='M'?' selected':''}" onclick="selectSize(${p.id},'${s}',this)" data-size="${s}">
+                <span class="sz">${labels[i]}</span>
+                <span class="pr">R$ ${prices[i].toFixed(2).replace('.',',')}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        `}
+        <button class="add-btn" onclick="addToCart(${p.id})">
+          🛒 Adicionar ao Pedido
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectSize(id, size, el) {
+  selectedSizes[id] = size;
+  document.querySelectorAll(`#sizes-${id} .size-btn`).forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── CART LOGIC ───────────────────────────────────────
+function addToCart(id) {
+  const pizza = PIZZAS.find(p => p.id === id);
+  if (!pizza) return;
+  const size = selectedSizes[id] || 'M';
+  const priceMap = { P: pizza.pp, M: pizza.pm, G: pizza.pg };
+  const price = priceMap[size];
+  const existing = cart.find(i => i.id === id && i.size === size);
+  if (existing) { existing.qty++; }
+  else { cart.push({ id, nome: pizza.nome, emoji: pizza.emoji, size, price, qty: 1 }); }
+  renderCart();
+  bounceCard(id);
+}
+
+function bounceCard(id) {
+  const card = document.getElementById('card-'+id);
+  if (!card) return;
+  card.style.transform = 'scale(0.97)';
+  setTimeout(() => card.style.transform = '', 200);
+}
+
+function changeQty(id, size, delta) {
+  const item = cart.find(i => i.id === id && i.size === size);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => !(i.id === id && i.size === size));
+  renderCart();
+}
+
+function getTotal() {
+  const sub = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
+  const taxa = deliveryType === 'entrega' ? 5 : 0;
+  return { sub, taxa, total: sub + taxa };
+}
+
+// ── RENDER CART (shared by sidebar + drawer) ─────────
+function buildCartHTML(isDrawer = false) {
+  const { sub, taxa, total } = getTotal();
+  const isEmpty = cart.length === 0;
+
+  return `
+    <div class="cart-header"><h3>🛒 Seu Pedido</h3><span class="cart-count">${cart.reduce((a,i)=>a+i.qty,0)} itens</span></div>
+
+    <div class="customer-form">
+      <h4>Seus dados</h4>
+      <input class="cf-input" type="text" placeholder="Seu nome *" id="${isDrawer?'d-':''}cf-nome">
+      <input class="cf-input" type="tel" placeholder="WhatsApp (11) 99999-9999 *" id="${isDrawer?'d-':''}cf-tel">
+      <div class="delivery-toggle">
+        <button class="dt-btn ${deliveryType==='entrega'?'active':''}" onclick="setDelivery('entrega',${isDrawer})">🛵 Entrega</button>
+        <button class="dt-btn ${deliveryType==='retirada'?'active':''}" onclick="setDelivery('retirada',${isDrawer})">🏪 Retirada</button>
+      </div>
+      ${deliveryType==='entrega'?`<input class="cf-input" type="text" placeholder="Endereço completo *" id="${isDrawer?'d-':''}cf-end">`:``}
+      <select class="payment-select" id="${isDrawer?'d-':''}cf-pgto">
+        <option value="">💳 Forma de pagamento *</option>
+        <option value="pix">PIX</option>
+        <option value="credito">Cartão de Crédito</option>
+        <option value="debito">Cartão de Débito</option>
+        <option value="dinheiro">Dinheiro</option>
+      </select>
+      <textarea class="obs-input" rows="2" placeholder="Observações (opcional)..." id="${isDrawer?'d-':''}cf-obs"></textarea>
+    </div>
+
+    <div class="cart-items">
+      ${isEmpty ? `<div class="empty-cart"><span class="ec-icon">🛒</span><p>Seu carrinho está vazio</p><small>Escolha suas pizzas ao lado!</small></div>` :
+        cart.map(i => `
+          <div class="cart-item">
+            <span class="ci-emoji">${i.emoji}</span>
+            <div class="ci-info">
+              <div class="ci-name">${i.nome}</div>
+              <div class="ci-size">Tamanho: ${i.size} • R$ ${i.price.toFixed(2).replace('.',',')}</div>
+            </div>
+            <div class="ci-qty">
+              <button class="qty-btn qty-minus" onclick="changeQty(${i.id},'${i.size}',-1)">−</button>
+              <span>${i.qty}</span>
+              <button class="qty-btn qty-plus" onclick="changeQty(${i.id},'${i.size}',1)">+</button>
+            </div>
+            <span class="ci-price">R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}</span>
+          </div>
+        `).join('')
+      }
+    </div>
+
+    ${!isEmpty ? `
+    <div class="cart-summary">
+      <div class="cs-row"><span>Subtotal</span><span>R$ ${sub.toFixed(2).replace('.',',')}</span></div>
+      ${deliveryType==='entrega'?`<div class="cs-row"><span>Taxa de entrega</span><span>R$ ${taxa.toFixed(2).replace('.',',')}</span></div>`:'<div class="cs-row"><span>Retirada no local</span><span style="color:var(--green)">Grátis</span></div>'}
+      <div class="cs-row total"><span>Total</span><span>R$ ${total.toFixed(2).replace('.',',')}</span></div>
+      <button class="whatsapp-btn" onclick="sendWhatsApp(${isDrawer})" style="margin-top:12px">
+        <span class="whatsapp-icon">💬</span> Pedir pelo WhatsApp
+      </button>
+      <p style="text-align:center;font-size:0.72rem;color:var(--muted);margin-top:8px">Você será redirecionado para o WhatsApp</p>
+    </div>` : ''}
+  `;
+}
+
+function renderCart() {
+  document.getElementById('cartContent').innerHTML = buildCartHTML(false);
+  document.getElementById('drawerContent').innerHTML = buildCartHTML(true);
+  updateFloatingCart();
+}
+
+function updateFloatingCart() {
+  const { total } = getTotal();
+  const count = cart.reduce((a,i)=>a+i.qty,0);
+  const btn = document.getElementById('floatingCart');
+  document.getElementById('floatTotal').textContent = 'R$ ' + total.toFixed(2).replace('.',',');
+  document.getElementById('floatCount').textContent = count;
+  if (count > 0) btn.classList.add('has-items');
+  else btn.classList.remove('has-items');
+}
+
+function setDelivery(type, isDrawer) {
+  deliveryType = type;
+  renderCart();
+}
+
+function openDrawer() { document.getElementById('cartDrawer').classList.add('open'); }
+function closeDrawer() { document.getElementById('cartDrawer').classList.remove('open'); }
+
+// ── WHATSAPP ORDER ───────────────────────────────────
+function sendWhatsApp(isDrawer) {
+  const prefix = isDrawer ? 'd-' : '';
+  const nome = document.getElementById(prefix+'cf-nome')?.value?.trim();
+  const tel = document.getElementById(prefix+'cf-tel')?.value?.trim();
+  const end = document.getElementById(prefix+'cf-end')?.value?.trim();
+  const pgto = document.getElementById(prefix+'cf-pgto')?.value;
+  const obs = document.getElementById(prefix+'cf-obs')?.value?.trim();
+
+  if (!nome) { alert('Por favor, informe seu nome.'); return; }
+  if (!tel) { alert('Por favor, informe seu WhatsApp.'); return; }
+  if (deliveryType === 'entrega' && !end) { alert('Por favor, informe o endereço de entrega.'); return; }
+  if (!pgto) { alert('Selecione a forma de pagamento.'); return; }
+  if (cart.length === 0) { alert('Adicione itens ao pedido.'); return; }
+
+  const { sub, taxa, total } = getTotal();
+  const orderNum = '#' + Math.floor(1000 + Math.random() * 9000);
+  const pgtoLabel = { pix:'PIX', credito:'Cartão Crédito', debito:'Cartão Débito', dinheiro:'Dinheiro' }[pgto];
+
+  let msg = `🍕 *PEDIDO PIZZAMASTER PRO* ${orderNum}\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+  msg += `👤 *Cliente:* ${nome}\n`;
+  msg += `📱 *WhatsApp:* ${tel}\n`;
+  msg += `📦 *Tipo:* ${deliveryType === 'entrega' ? '🛵 Entrega' : '🏪 Retirada no local'}\n`;
+  if (deliveryType === 'entrega') msg += `📍 *Endereço:* ${end}\n`;
+  msg += `💳 *Pagamento:* ${pgtoLabel}\n\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `🛒 *ITENS DO PEDIDO:*\n`;
+  cart.forEach(i => {
+    msg += `• ${i.emoji} ${i.nome} (${i.size}) x${i.qty} = R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}\n`;
+  });
+  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `💰 Subtotal: R$ ${sub.toFixed(2).replace('.',',')}\n`;
+  if (deliveryType === 'entrega') msg += `🛵 Taxa entrega: R$ ${taxa.toFixed(2).replace('.',',')}\n`;
+  msg += `✅ *TOTAL: R$ ${total.toFixed(2).replace('.',',')}*\n`;
+  if (obs) msg += `\n📝 *Obs:* ${obs}\n`;
+  msg += `\n⏰ Pedido feito às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+
+  const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+
+  document.getElementById('confirmNumber').textContent = orderNum;
+  document.getElementById('confirmModal').classList.add('open');
+  closeDrawer();
+  cart = [];
+  renderCart();
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+</script>
+</body>
+</html>

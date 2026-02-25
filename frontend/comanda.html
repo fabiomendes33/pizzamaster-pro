@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🖨️ PizzaMaster Pro — Impressão de Comanda</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Nunito:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #FF4500; --primary-dark:#CC3700;
+  --accent: #FFD700; --bg: #0F0F0F; --bg2: #1A1A1A;
+  --bg3: #242424; --card: #1E1E1E; --border: #2D2D2D;
+  --text: #F0F0F0; --muted: #888;
+  --green: #00C853; --red: #FF1744;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* SCREEN LAYOUT */
+.screen { display:flex; height:100vh; overflow:hidden; }
+
+/* PEDIDOS LIST */
+.pedidos-panel {
+  width:380px; flex-shrink:0;
+  background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+}
+.panel-header {
+  padding:20px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.panel-header h2 { font-family:'Abril Fatface',serif; font-size:1.3rem; color:var(--primary); }
+.panel-search {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+}
+.search-inp {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  border-radius:8px; padding:9px 14px; color:var(--text);
+  font-family:'Nunito',sans-serif; font-size:0.88rem; outline:none;
+}
+.search-inp:focus { border-color:var(--primary); }
+.pedidos-list { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+
+.pedido-item {
+  background:var(--bg3); border:2px solid var(--border);
+  border-radius:12px; padding:14px; cursor:pointer;
+  transition:all 0.2s;
+}
+.pedido-item:hover { border-color:var(--primary); }
+.pedido-item.selected { border-color:var(--primary); background:rgba(255,69,0,0.08); }
+.pedido-item.printed { border-color:var(--green); opacity:0.7; }
+
+.pi-header { display:flex; justify-content:space-between; margin-bottom:6px; }
+.pi-id { font-family:'Abril Fatface',serif; color:var(--primary); font-size:1.1rem; }
+.pi-time { font-size:0.75rem; color:var(--muted); }
+.pi-client { font-weight:800; font-size:0.92rem; margin-bottom:4px; }
+.pi-items { font-size:0.78rem; color:var(--muted); margin-bottom:8px; }
+.pi-footer { display:flex; justify-content:space-between; align-items:center; }
+.pi-total { font-weight:900; color:var(--green); }
+.pi-status {
+  padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:700;
+}
+.s-recebido { background:rgba(33,150,243,0.2); color:#42A5F5; }
+.s-preparando { background:rgba(255,109,0,0.2); color:#FF9040; }
+.s-entrega { background:rgba(0,200,83,0.2); color:#00C853; }
+.s-entregue { background:rgba(136,136,136,0.2); color:#888; }
+.printed-badge { font-size:0.7rem; color:var(--green); font-weight:700; }
+
+/* PREVIEW PANEL */
+.preview-panel {
+  flex:1; display:flex; flex-direction:column;
+  background:var(--bg);
+}
+.preview-header {
+  padding:20px 28px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--bg2);
+}
+.preview-header h2 { font-family:'Abril Fatface',serif; font-size:1.3rem; color:var(--accent); }
+.preview-actions { display:flex; gap:10px; }
+
+.btn {
+  padding:9px 20px; border-radius:8px; border:none;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:0.85rem;
+  cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px;
+}
+.btn-primary { background:linear-gradient(135deg,var(--primary),#FF6B35); color:white; }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(255,69,0,0.4); }
+.btn-secondary { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
+.btn-success { background:var(--green); color:white; }
+.btn-success:hover { transform:translateY(-2px); }
+
+.preview-area {
+  flex:1; overflow-y:auto; padding:40px;
+  display:flex; align-items:flex-start; justify-content:center;
+  background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.01) 10px, rgba(255,255,255,0.01) 20px);
+}
+
+.empty-preview {
+  text-align:center; margin:auto; color:var(--muted);
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+}
+.empty-preview .ep-icon { font-size:4rem; opacity:0.3; }
+.empty-preview h3 { font-size:1.2rem; }
+
+/* ── THE COMANDA (receipt styling) ── */
+.comanda {
+  background:white; color:#111;
+  width:80mm; /* standard thermal printer width */
+  min-height:120mm;
+  padding:4mm;
+  font-family:'Share Tech Mono', monospace;
+  font-size:10pt;
+  line-height:1.5;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.1);
+  border-radius:2px;
+  position:relative;
+}
+.comanda::before {
+  content:'';
+  position:absolute; top:-8px; left:0; right:0; height:8px;
+  background:repeating-linear-gradient(90deg, white 0, white 5px, #ddd 5px, #ddd 10px);
+}
+.comanda::after {
+  content:'';
+  position:absolute; bottom:-8px; left:0; right:0; height:8px;
+  background:repeating-linear-gradient(90deg, white 0, white 5px, #ddd 5px, #ddd 10px);
+}
+
+.c-center { text-align:center; }
+.c-logo { font-size:18pt; font-weight:900; font-family:'Nunito',sans-serif; letter-spacing:-0.5px; }
+.c-sub { font-size:7.5pt; color:#444; }
+.c-divider { border:none; border-top:1px dashed #aaa; margin:4px 0; }
+.c-divider-solid { border:none; border-top:2px solid #333; margin:4px 0; }
+.c-title { font-weight:900; font-size:12pt; letter-spacing:1px; }
+.c-row { display:flex; justify-content:space-between; align-items:baseline; }
+.c-row-3 { display:grid; grid-template-columns:2fr 1fr 1fr; gap:2px; }
+.c-bold { font-weight:900; }
+.c-big { font-size:13pt; font-weight:900; }
+.c-sm { font-size:8pt; color:#555; }
+.c-tag {
+  display:inline-block; border:1px solid #333;
+  padding:1px 6px; font-size:7pt; letter-spacing:1px; font-weight:700;
+}
+.c-barcode {
+  font-family:'Share Tech Mono',monospace;
+  font-size:7pt; letter-spacing:3px;
+  color:#444; margin-top:2px;
+}
+.c-qr {
+  width:30mm; height:30mm;
+  border:2px solid #333; margin:6px auto;
+  display:flex; align-items:center; justify-content:center;
+  font-size:6pt; color:#666; text-align:center;
+}
+.c-highlight { background:#000; color:white; padding:2px 4px; font-weight:900; }
+.c-item-line { margin:2px 0; }
+
+/* STATUS badge on comanda */
+.c-status-badge {
+  border:2px solid #333; text-align:center;
+  padding:3px; font-weight:900; font-size:9pt;
+  letter-spacing:2px; margin:4px 0;
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { background:white; }
+  .screen { display:block; height:auto; }
+  .pedidos-panel, .preview-panel > *:not(.preview-area) { display:none !important; }
+  .preview-area { padding:0; background:white; display:block; }
+  .comanda { box-shadow:none; margin:0; }
+  .comanda::before, .comanda::after { display:none; }
+  @page { margin:2mm; size:80mm auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="screen">
+
+  <!-- LISTA DE PEDIDOS -->
+  <div class="pedidos-panel">
+    <div class="panel-header">
+      <h2>🖨️ Comandas</h2>
+      <span style="font-size:0.75rem;color:var(--muted)" id="totalPedidos">0 pedidos</span>
+    </div>
+    <div class="panel-search">
+      <input class="search-inp" type="text" placeholder="🔍 Buscar pedido ou cliente..." id="searchInput" oninput="filterPedidos()">
+    </div>
+
+    <!-- FILTRO STATUS -->
+    <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+      <button class="btn btn-primary" style="padding:5px 12px;font-size:0.75rem" onclick="filterStatus('all')">Todos</button>
+      <button class="btn btn-secondary" style="padding:5px 12px;font-size:0.75rem" onclick="filterStatus('recebido')">Recebido</button>
+      <button class="btn btn-secondary" style="padding:5px 12px;font-size:0.75rem" onclick="filterStatus('preparando')">Preparando</button>
+      <button class="btn btn-secondary" style="padding:5px 12px;font-size:0.75rem" onclick="filterStatus('entrega')">Entrega</button>
+    </div>
+
+    <div class="pedidos-list" id="pedidosList"></div>
+  </div>
+
+  <!-- PREVIEW + ACTIONS -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <h2>👁️ Preview da Comanda</h2>
+      <div class="preview-actions">
+        <button class="btn btn-secondary" onclick="printComanda('cozinha')">🍳 Imprimir Cozinha</button>
+        <button class="btn btn-secondary" onclick="printComanda('entregador')">🛵 Imprimir Entregador</button>
+        <button class="btn btn-primary" onclick="printComanda('cliente')">🖨️ Imprimir Completa</button>
+      </div>
+    </div>
+
+    <!-- COMANDA TYPE TABS -->
+    <div style="display:flex;gap:8px;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--bg2)">
+      <button class="btn btn-primary" style="font-size:0.78rem;padding:6px 14px" onclick="setComandaType('completa')">📄 Completa</button>
+      <button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 14px" onclick="setComandaType('cozinha')">🍳 Cozinha</button>
+      <button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 14px" onclick="setComandaType('entregador')">🛵 Entregador</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-success" onclick="markPrinted()">✅ Marcar Impresso</button>
+    </div>
+
+    <div class="preview-area" id="previewArea">
+      <div class="empty-preview">
+        <span class="ep-icon">🖨️</span>
+        <h3>Selecione um pedido</h3>
+        <p style="font-size:0.85rem">Clique em um pedido à esquerda para visualizar a comanda</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────
+const EMPRESA = {
+  nome: 'PizzaMaster Pro',
+  cnpj: '00.000.000/0001-00',
+  end: 'Rua das Pizzas, 123 — São Paulo/SP',
+  tel: '(11) 9999-9999',
+  whatsapp: '(11) 99999-9999',
+};
+
+let pedidos = [
+  { id:'#0021', numero:21, cliente:'Carlos Silva', telefone:'(11) 98765-4321', end:'Rua das Flores, 100 — Jardins', tipo:'entrega', pgto:'PIX', status:'preparando', hora:'18:42', obs:'Sem cebola na Portuguesa', impresso:false,
+    itens:[ {nome:'Margherita', emoji:'🍕', tam:'G', qty:1, preco:49.90}, {nome:'Portuguesa', emoji:'🫒', tam:'M', qty:1, preco:42.90}, {nome:'Coca-Cola 2L', emoji:'🥤', tam:'-', qty:2, preco:12.90} ],
+    subtotal:118.60, taxa:5, total:123.60 },
+  { id:'#0022', numero:22, cliente:'Ana Costa', telefone:'(11) 97654-3210', end:'Retirada no local', tipo:'retirada', pgto:'Cartão Crédito', status:'recebido', hora:'18:51', obs:'', impresso:false,
+    itens:[ {nome:'Pepperoni', emoji:'🫓', tam:'M', qty:2, preco:44.90} ],
+    subtotal:89.80, taxa:0, total:89.80 },
+  { id:'#0023', numero:23, cliente:'João Ferreira', telefone:'(11) 96543-2109', end:'Rua São Paulo, 250 — Vila Madalena', tipo:'entrega', pgto:'Dinheiro', status:'entrega', hora:'18:15', obs:'Troco para R$ 200,00', impresso:true,
+    itens:[ {nome:'Quatro Queijos', emoji:'🧀', tam:'G', qty:1, preco:62.90}, {nome:'Frango c/ Catupiry', emoji:'🐔', tam:'M', qty:1, preco:44.90} ],
+    subtotal:107.80, taxa:5, total:112.80 },
+  { id:'#0024', numero:24, cliente:'Maria Oliveira', telefone:'(11) 95432-1098', end:'Rua Liberdade, 88 — Liberdade', tipo:'entrega', pgto:'PIX', status:'entregue', hora:'17:38', obs:'Interfone 204', impresso:true,
+    itens:[ {nome:'Banana Nevada', emoji:'🍌', tam:'P', qty:1, preco:28.90}, {nome:'Nutella c/ Morango', emoji:'🍓', tam:'M', qty:1, preco:46.90} ],
+    subtotal:75.80, taxa:5, total:80.80 },
+  { id:'#0025', numero:25, cliente:'Pedro Santos', telefone:'(11) 94321-0987', end:'Local — Mesa 4', tipo:'local', pgto:'Cartão Débito', status:'recebido', hora:'19:02', obs:'Mesa 4 — 3 pessoas', impresso:false,
+    itens:[ {nome:'Mexicana', emoji:'🫑', tam:'G', qty:1, preco:66.90}, {nome:'Frango c/ Catupiry', emoji:'🐔', tam:'M', qty:1, preco:44.90}, {nome:'Suco Natural', emoji:'🍊', tam:'-', qty:3, preco:10.90} ],
+    subtotal:144.50, taxa:0, total:144.50 },
+];
+
+let selectedPedido = null;
+let comandaType = 'completa';
+let filtroStatus = 'all';
+
+// ── INIT ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderPedidosList();
+});
+
+function setComandaType(type) {
+  comandaType = type;
+  if (selectedPedido) renderComanda(selectedPedido);
+}
+
+function filterStatus(s) { filtroStatus = s; renderPedidosList(); }
+
+function filterPedidos() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = pedidos.filter(p =>
+    (filtroStatus === 'all' || p.status === filtroStatus) &&
+    (p.id.toLowerCase().includes(q) || p.cliente.toLowerCase().includes(q))
+  );
+  renderPedidosList(filtered);
+}
+
+// ── RENDER LIST ───────────────────────────────────────
+function renderPedidosList(list = null) {
+  const data = list || pedidos.filter(p => filtroStatus === 'all' || p.status === filtroStatus);
+  document.getElementById('totalPedidos').textContent = `${data.length} pedido${data.length!==1?'s':''}`;
+  document.getElementById('pedidosList').innerHTML = data.map(p => `
+    <div class="pedido-item ${selectedPedido?.id===p.id?'selected':''} ${p.impresso?'printed':''}" onclick="selectPedido('${p.id}')">
+      <div class="pi-header">
+        <span class="pi-id">${p.id}</span>
+        <span class="pi-time">⏱ ${p.hora}</span>
+      </div>
+      <div class="pi-client">👤 ${p.cliente}</div>
+      <div class="pi-items">${p.itens.map(i=>`${i.emoji} ${i.nome} (${i.tam})`).join(' • ')}</div>
+      <div class="pi-footer">
+        <span class="pi-total">R$ ${p.total.toFixed(2).replace('.',',')}</span>
+        <span class="pi-status s-${p.status}">${statusLabel(p.status)}</span>
+        ${p.impresso?`<span class="printed-badge">✅ Impresso</span>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectPedido(id) {
+  selectedPedido = pedidos.find(p => p.id === id);
+  renderPedidosList();
+  renderComanda(selectedPedido);
+}
+
+function markPrinted() {
+  if (!selectedPedido) return;
+  selectedPedido.impresso = true;
+  renderPedidosList();
+  renderComanda(selectedPedido);
+}
+
+// ── RENDER COMANDA ────────────────────────────────────
+function renderComanda(pedido) {
+  const area = document.getElementById('previewArea');
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR');
+  const timeStr = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  let html = '';
+
+  if (comandaType === 'completa') {
+    html = buildComandaCompleta(pedido, dateStr, timeStr);
+  } else if (comandaType === 'cozinha') {
+    html = buildComandaCozinha(pedido, dateStr, timeStr);
+  } else {
+    html = buildComandaEntregador(pedido, dateStr, timeStr);
+  }
+
+  area.innerHTML = html;
+}
+
+function buildComandaCompleta(p, date, time) {
+  const tipoIcon = { entrega:'ENTREGA', retirada:'RETIRADA', local:'LOCAL' }[p.tipo];
+
+  return `
+  <div class="comanda" id="comanda-print">
+
+    <div class="c-center">
+      <div class="c-logo">🍕 ${EMPRESA.nome}</div>
+      <div class="c-sub">${EMPRESA.end}</div>
+      <div class="c-sub">Tel: ${EMPRESA.tel} | WhatsApp: ${EMPRESA.whatsapp}</div>
+      <div class="c-sub">CNPJ: ${EMPRESA.cnpj}</div>
+    </div>
+
+    <hr class="c-divider-solid">
+    <div class="c-center">
+      <div class="c-tag">PEDIDO ${p.id}</div>
+      <div class="c-status-badge">${tipoIcon}</div>
+    </div>
+    <hr class="c-divider">
+
+    <div class="c-row"><span>Data:</span><span>${date}</span></div>
+    <div class="c-row"><span>Hora:</span><span>${time}</span></div>
+    <div class="c-row"><span>Pedido:</span><span class="c-bold">${p.id}</span></div>
+
+    <hr class="c-divider">
+
+    <div class="c-bold">CLIENTE</div>
+    <div>${p.cliente}</div>
+    <div>Tel: ${p.telefone}</div>
+    ${p.tipo === 'entrega' ? `<div>End: ${p.end}</div>` : ''}
+    ${p.tipo === 'local' ? `<div>${p.obs || 'Mesa / Balcão'}</div>` : ''}
+
+    <hr class="c-divider">
+
+    <div class="c-bold">ITENS</div>
+    <hr class="c-divider">
+    <div class="c-row-3">
+      <span class="c-sm">Produto</span>
+      <span class="c-sm" style="text-align:center">Qtd</span>
+      <span class="c-sm" style="text-align:right">Valor</span>
+    </div>
+    <hr class="c-divider">
+
+    ${p.itens.map(i => `
+    <div class="c-row-3 c-item-line">
+      <span>${i.emoji} ${i.nome}${i.tam!=='-'?` (${i.tam})`:''}:</span>
+      <span style="text-align:center">${i.qty}x</span>
+      <span style="text-align:right">R$${(i.preco*i.qty).toFixed(2).replace('.',',')}</span>
+    </div>`).join('')}
+
+    <hr class="c-divider">
+    <div class="c-row"><span>Subtotal:</span><span>R$ ${p.subtotal.toFixed(2).replace('.',',')}</span></div>
+    ${p.tipo === 'entrega' ? `<div class="c-row"><span>Taxa entrega:</span><span>R$ ${p.taxa.toFixed(2).replace('.',',')}</span></div>` : ''}
+    <hr class="c-divider-solid">
+    <div class="c-row c-big"><span>TOTAL:</span><span>R$ ${p.total.toFixed(2).replace('.',',')}</span></div>
+    <hr class="c-divider">
+
+    <div class="c-row"><span>Pagamento:</span><span class="c-bold">${p.pgto}</span></div>
+    ${p.obs ? `<hr class="c-divider"><div class="c-sm">OBS: ${p.obs}</div>` : ''}
+
+    <hr class="c-divider-solid">
+    <div class="c-center">
+      <div class="c-sm">Obrigado pela preferência!</div>
+      <div class="c-sm">Avalie-nos no Google ⭐⭐⭐⭐⭐</div>
+      <div class="c-qr">QR CODE<br>Avaliação</div>
+      <div class="c-barcode">*${p.id.replace('#','')}${Date.now().toString().slice(-6)}*</div>
+      <div class="c-sm" style="margin-top:4px">PizzaMaster Pro v2.0</div>
+    </div>
+
+  </div>`;
+}
+
+function buildComandaCozinha(p, date, time) {
+  return `
+  <div class="comanda" id="comanda-print">
+    <div class="c-center">
+      <div class="c-bold" style="font-size:14pt">🍳 COZINHA</div>
+      <div class="c-tag" style="font-size:12pt;padding:4px 12px;margin:4px 0;display:inline-block">PEDIDO ${p.id}</div>
+    </div>
+    <hr class="c-divider">
+    <div class="c-row"><span>Hora:</span><span class="c-bold">${time}</span></div>
+    <div class="c-row"><span>Tipo:</span><span class="c-highlight">${{ entrega:'ENTREGA', retirada:'RETIRADA', local:'LOCAL' }[p.tipo]}</span></div>
+    ${p.tipo === 'local' && p.obs ? `<div class="c-bold">${p.obs}</div>` : ''}
+    <hr class="c-divider-solid">
+    <div class="c-bold" style="font-size:12pt;margin:4px 0">ITENS PARA PREPARAR:</div>
+    <hr class="c-divider">
+    ${p.itens.filter(i=>i.tam!=='-').map(i => `
+    <div class="c-item-line" style="font-size:11pt">
+      <span class="c-bold">${i.qty}x ${i.nome}</span>
+      ${i.tam!=='-'?`<span> — TAM: <span class="c-highlight">${i.tam}</span></span>`:''}
+    </div>`).join('')}
+    ${p.obs ? `<hr class="c-divider"><div class="c-bold">⚠️ OBS:</div><div style="font-size:10pt">${p.obs}</div>` : ''}
+    <hr class="c-divider-solid">
+    <div class="c-center c-sm">${date} ${time}</div>
+  </div>`;
+}
+
+function buildComandaEntregador(p, date, time) {
+  return `
+  <div class="comanda" id="comanda-print">
+    <div class="c-center">
+      <div class="c-bold" style="font-size:14pt">🛵 ENTREGADOR</div>
+      <div class="c-tag" style="font-size:12pt;padding:4px 12px;margin:4px 0;display:inline-block">PEDIDO ${p.id}</div>
+    </div>
+    <hr class="c-divider">
+
+    <div class="c-bold">📍 ENDEREÇO:</div>
+    <div style="font-size:11pt">${p.end}</div>
+    <hr class="c-divider">
+
+    <div class="c-bold">👤 CLIENTE:</div>
+    <div>${p.cliente}</div>
+    <div>📱 ${p.telefone}</div>
+    <hr class="c-divider">
+
+    <div class="c-bold">ITENS:</div>
+    ${p.itens.map(i=>`<div>${i.qty}x ${i.emoji} ${i.nome}${i.tam!=='-'?` (${i.tam})`:''}</div>`).join('')}
+    <hr class="c-divider-solid">
+
+    <div class="c-row c-big"><span>COBRAR:</span><span>R$ ${p.total.toFixed(2).replace('.',',')}</span></div>
+    <div class="c-row"><span>Pagamento:</span><span class="c-bold">${p.pgto}</span></div>
+    ${p.obs ? `<hr class="c-divider"><div>⚠️ ${p.obs}</div>` : ''}
+    <hr class="c-divider">
+    <div class="c-center c-sm">${date} ${time}</div>
+  </div>`;
+}
+
+// ── PRINT ────────────────────────────────────────────
+function printComanda(type) {
+  if (!selectedPedido) { alert('Selecione um pedido!'); return; }
+  setComandaType(type);
+  setTimeout(() => {
+    window.print();
+    markPrinted();
+  }, 200);
+}
+
+function statusLabel(s) {
+  return { recebido:'📥 Recebido', preparando:'🔥 Preparando', entrega:'🛵 Entrega', entregue:'✅ Entregue', cancelado:'❌ Cancelado' }[s] || s;
+}
+</script>
+</body>
+</html>
