@@ -1022,5 +1022,28 @@ https://github.com/fabiomendes33/pizzamaster-pro
 
 ---
 
+Veja o que aparece no seu VS Code:
+📁 PIZZAMASTER PRO
+│
+├── 📁 backend
+│ ├── 📁 node_modules ✅ dependências instaladas
+│ ├── {} package-lock.json
+│ ├── {} package.json
+│ └── JS server.js
+│
+├── 📁 database
+│ └── 🗄️ schema.sql ✅ criou a pasta e colocou correto!
+│
+├── 📁 frontend
+│ ├── JS app.js
+│ ├── 🌐 cardapio-online.html
+│ ├── 🖨️ comanda.html
+│ ├── 📄 index.html
+│ ├── 🎨 style.css
+│ └── 💬 whatsapp.html
+│
+├── 📖 README.md
+└──
+
 _🍕 PizzaMaster Pro v2.0 — Sistema Comercial Completo_
 _Desenvolvido com ❤️ para o mercado brasileiro_

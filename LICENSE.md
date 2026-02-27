@@ -6,30 +6,30 @@ Copyright (c) 2026 — Todos os direitos reservados.
 
 ## TERMOS E CONDIÇÕES DE USO
 
-Este software e todo o seu código-fonte, design, documentação e materiais relacionados 
-("Software") são propriedade exclusiva do autor e estão protegidos pelas leis de direitos 
+Este software e todo o seu código-fonte, design, documentação e materiais relacionados
+("Software") são propriedade exclusiva do autor e estão protegidos pelas leis de direitos
 autorais do Brasil (Lei nº 9.610/1998) e tratados internacionais de propriedade intelectual.
 
 ---
 
 ## ❌ É EXPRESSAMENTE PROIBIDO:
 
-1. **Copiar** total ou parcialmente o código-fonte deste Software sem autorização prévia e 
+1. **Copiar** total ou parcialmente o código-fonte deste Software sem autorização prévia e
    por escrito do autor.
 
-2. **Distribuir, vender, alugar, sublicenciar ou transferir** este Software ou qualquer 
+2. **Distribuir, vender, alugar, sublicenciar ou transferir** este Software ou qualquer
    parte dele a terceiros sem permissão expressa do autor.
 
-3. **Modificar, adaptar, traduzir, fazer engenharia reversa, descompilar ou desmontar** 
+3. **Modificar, adaptar, traduzir, fazer engenharia reversa, descompilar ou desmontar**
    qualquer parte deste Software.
 
-4. **Remover ou alterar** quaisquer avisos de direitos autorais, marcas registradas ou 
+4. **Remover ou alterar** quaisquer avisos de direitos autorais, marcas registradas ou
    outros avisos de propriedade contidos no Software.
 
-5. **Usar o nome, marca ou identidade visual** do PizzaMaster Pro para criar produtos 
+5. **Usar o nome, marca ou identidade visual** do PizzaMaster Pro para criar produtos
    derivados ou concorrentes.
 
-6. **Publicar, compartilhar ou disponibilizar** o código-fonte em repositórios públicos, 
+6. **Publicar, compartilhar ou disponibilizar** o código-fonte em repositórios públicos,
    fóruns, redes sociais ou qualquer outro meio sem autorização.
 
 ---
@@ -40,7 +40,7 @@ autorais do Brasil (Lei nº 9.610/1998) e tratados internacionais de propriedade
 
 2. **Usar o Software** mediante contrato de licença comercial assinado com o autor.
 
-3. **Personalizar** o Software para uso próprio, desde que dentro dos termos do contrato 
+3. **Personalizar** o Software para uso próprio, desde que dentro dos termos do contrato
    de licença adquirido.
 
 ---
@@ -61,19 +61,19 @@ A violação de qualquer termo desta licença sujeita o infrator a:
 
 Para adquirir uma licença comercial ou obter permissão de uso, entre em contato:
 
-- **Email:** [seu-email@email.com]
-- **WhatsApp:** [seu-numero]
-- **GitHub:** [seu-usuario-github]
+- **Email:** [fabioanalistaseg@gmail.com]
+- **WhatsApp:** [34999605820]
+- **GitHub:** [https://github.com/fabiomendes33/pizzamaster-pro]
 
 ---
 
 ## ℹ️ AVISO LEGAL:
 
-Este Software é fornecido "como está", sem garantias de qualquer tipo, expressas ou 
-implícitas. O autor não se responsabiliza por quaisquer danos diretos, indiretos, 
+Este Software é fornecido "como está", sem garantias de qualquer tipo, expressas ou
+implícitas. O autor não se responsabiliza por quaisquer danos diretos, indiretos,
 incidentais ou consequentes decorrentes do uso ou incapacidade de uso deste Software.
 
 ---
 
-*PizzaMaster Pro v2.0 — Sistema Comercial Completo*
-*© 2026 — Todos os direitos reservados*
+_PizzaMaster Pro v2.0 — Sistema Comercial Completo_
+_© 2026 — Todos os direitos reservados_

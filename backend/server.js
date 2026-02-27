@@ -320,7 +320,7 @@ app.post("/api/clientes", authMiddleware, async (req, res) => {
         endereco,
         bairro,
         cep,
-        cidade || "São Paulo",
+        cidade || "sao paulo",
         data_nascimento,
       ],
     );

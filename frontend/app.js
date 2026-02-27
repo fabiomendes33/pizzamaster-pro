@@ -33,7 +33,7 @@ const DEFAULT_PIZZAS = [
   {
     id: 2,
     nome: "Pepperoni",
-    emoji: "🍕",
+    emoji: "⚡",
     categoria: "especial",
     ingredientes: "Pepperoni artesanal, mussarela, tomate",
     preco_p: 34.9,
